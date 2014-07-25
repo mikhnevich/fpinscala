@@ -19,10 +19,20 @@ sealed trait Option[+A] {
     case Some(x) if f(x) => this
     case _ => None
   }
-
-
 }
 
 case class Some[+A](get: A) extends Option[A]
 
 case object None extends Option[Nothing]
+
+object Option {
+  def sequence[A](a: List[Option[A]]): Option[List[A]] = a match {
+    case (None, Nil) => None
+    case (Some(x), Nil) => Some(List(x))
+    case (None, t) => None[List[A]]
+    case (Some(x), t) =>
+      val v = sequence(t).flatMap()
+      v.flatMap()
+
+  }
+}

@@ -16,7 +16,7 @@ object Ch4 {
   def parseInsuranceRateQuote(age: String, numberOfSpeedingTickets: String): Option[Double] = {
     val optAge: Option[Int] = Try(age.toInt)
     val optTickets: Option[Int] = Try(numberOfSpeedingTickets.toInt)
-    parseInsuranceRateQuote(optAge, optTickets)
+    map2(optAge, optTickets)(insuranceRateQuote)
   }
 
   def Try[A](a: => A): Option[A] =
@@ -25,5 +25,6 @@ object Ch4 {
       case e: Exception => None
     }
 
-  def map2[A,B,C]
+  def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
+    a.flatMap(x => b.map(y => f(x, y)))
 }
