@@ -110,6 +110,15 @@ object List {
 
   def map[A, B](l: List[A])(f: A => B): List[B] = foldRight(l, List[B]())((e, acc) => Cons(f(e), acc))
 
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
+    case Nil => Some(Nil)
+    case Cons(h, t) => f(h) flatMap (hh => traverse(t)(f) map (Cons(hh, _)))
+  }
+
+
+  def sequence[A](a: List[Option[A]]): Option[List[A]] = traverse(a)(identity)
+
+
   def filter[A](l: List[A])(f: A => Boolean): List[A] = foldRight(l, List[A]())((e, acc) => if (f(e)) Cons(e, acc) else acc)
 
   def flatMap[A, B](l: List[A])(f: A => List[B]): List[B] = concat(map(l)(f))

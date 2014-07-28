@@ -6,8 +6,9 @@ object Test extends App {
 
 
   def f(i: Int) = i * 2
-
-  val k = Ch4.lift(f)
-  println(k)
-  println(k(Some(2)))
+//  val list = Cons(Some(1), Cons(Some(2), Nil))
+//  val list = Nil
+  val list = Cons(Some(1), Cons(None, Nil))
+  val opt = Option.sequence(list)
+  println(opt)
 }
