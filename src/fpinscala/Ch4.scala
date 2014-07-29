@@ -25,6 +25,15 @@ object Ch4 {
     Option.map2(optAge, optTickets)(insuranceRateQuote)
   }
 
+  def safeDiv(x: Int, y: Int): Either[Exception, Int] = Try2(x / y)
+
+
+  def Try2[A](a: => A): Either[Exception, A] =
+    try Right(a)
+    catch {
+      case e: Exception => Left(e)
+    }
+
   def parseInts(a: List[String]): Option[List[Int]] = Option.sequence(List.map(a)(i => Try(i.toInt)))
 
 
