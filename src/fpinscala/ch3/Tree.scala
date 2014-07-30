@@ -1,4 +1,4 @@
-package fpinscala
+package fpinscala.ch3
 
 sealed trait Tree[+A]
 

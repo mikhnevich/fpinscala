@@ -1,7 +1,12 @@
-package fpinscala
+package fpinscala.ch4
 
-import scala.{Option => _, Either => _, _}
 import scala.collection.immutable.{List => _}
+import scala.{Either => _, Option => _, _}
+
+import fpinscala.ch3.List
+import fpinscala.ch3.Cons
+import fpinscala.ch3.Nil
+
 
 sealed trait Option[+A] {
   def map[B](f: A => B): Option[B] = this match {

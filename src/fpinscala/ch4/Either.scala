@@ -1,4 +1,7 @@
-package fpinscala
+package fpinscala.ch4
+
+import fpinscala.ch3
+import fpinscala.ch3.Cons
 
 sealed trait Either[+E, +A] {
   def map[B](f: A => B): Either[E, B] = this match {
@@ -21,9 +24,12 @@ sealed trait Either[+E, +A] {
   //    flatMap(x => b.map(y => f(x, y)))
     for {a <- this; b1 <- b} yield f(a, b1)
 
-  def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] = ???
+  def sequence[E, A](es: ch3.List[Either[E, A]]): Either[E, ch3.List[A]] = traverse(es)(identity)
 
-  def traverse[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] = ???
+  def traverse[E, A, B](as: ch3.List[A])(f: A => Either[E, B]): Either[E, ch3.List[B]] = as match {
+    case ch3.Nil => Right(ch3.Nil)
+    case Cons(h, t) => (f(h) map2 traverse(t)(f))(Cons(_, _))
+  }
 
 }
 

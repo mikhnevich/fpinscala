@@ -1,7 +1,8 @@
-package fpinscala
+package fpinscala.ch4
 
-import scala.{Option => _, Either => _, _}
+import fpinscala.ch3.{List}
 import scala.collection.immutable.{List => _}
+import scala.{Either => _, Option => _}
 
 object Ch4 {
   def mean(xs: Seq[Double]): Option[Double] = if (xs.isEmpty) None else Some(xs.sum / xs.length)
