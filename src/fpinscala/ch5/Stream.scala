@@ -45,6 +45,13 @@ sealed trait Stream[+A] {
     case _ => z
   }
 
+  def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] =
+    foldRight((z, Stream(z)))((a, p) => {
+      val b2 = f(a, p._1)
+      (b2, cons(b2, p._2))
+    })._2
+
+
   def exists(p: A => Boolean): Boolean = {
     foldRight(false)((a, b) => p(a) || b)
   }
@@ -80,7 +87,7 @@ sealed trait Stream[+A] {
   def find(f: A => Boolean): Option[A] =
     filter(f).headOption
 
-  val ones: Stream[Int] = Stream.cons(1, ones)
+  def ones: Stream[Int] = Stream.cons(1, ones)
 
   def constant[A](a: A): Stream[A] = Stream.cons(a, constant(a))
 
@@ -149,6 +156,9 @@ sealed trait Stream[+A] {
     case s => Some((s, s drop 1))
   }
 
+  def hasSubsequence[A](s: Stream[A]): Boolean =
+    tails exists (_ startsWith s)
+
 }
 
 case object Empty extends Stream[Nothing]
@@ -163,9 +173,18 @@ object Stream {
     Cons(() => head, () => tail)
   }
 
-  def empty[A]: Stream[A] = Empty
+  def empty[A]: Stream[A] = {
+    Empty
+  }
 
-  def apply[A](as: A*): Stream[A] =
+  def apply[A](as: A*): Stream[A] = {
     if (as.isEmpty) empty
-    else cons(as.head, apply(as.tail: _*))
+    else {
+      val tail = as.tail
+      cons(as.head, apply(tail: _*))
+    }
+  }
+
 }
+
+
