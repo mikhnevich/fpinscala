@@ -1,6 +1,5 @@
 package fpinscala.ch6
 
-import fpinscala.ch6.RNG.Rand
 
 import scala.annotation.tailrec
 
@@ -90,4 +89,23 @@ case class SimpleRNG(seed: Long) extends RNG {
     val (b, r2) = rb(r1)
     (f(a, b), r2)
   }
+
+  def both[A, B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] = map2(ra, rb)((_, _))
+
+  val randIntDouble: Rand[(Int, Double)] = both(int, double)
+
+  val randDoubleInt: Rand[(Double, Int)] = both(double, int)
+
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
+    val default = unit(List[A]())
+    fs.foldRight(default)((e, acc) => map2(e, acc)(_ :: _))
+  }
+
+  def intsViaSequence(count: Int): Rand[List[Int]] = {
+    sequence(List.fill(count)(int))
+  }
+
+  def nonNegativeLessThan(n: Int): Rand[Int] = ???
+
+  // page 86
 }
