@@ -13,30 +13,14 @@ res0: List[Any] = List(1, 1, 2, 3, 5, 8)
  */
 object P07 {
 
-  //  def flatten2(x: List): List = x.foldLeft(List())((acc, element) => acc ++ flatten(element))
-
-  def flatten(x: Any): List[Any] = x match {
-    case Nil => Nil
-    case List(h) :: Nil =>
-      val a = flatten(h)
-      a
-    case List(h) :: tail =>
-      val a = flatten(h)
-      val b = flatten(tail)
-      val c = a ++ b
-      c
-    case h :: tail =>
-      val a = flatten(tail)
-      val b = h :: a
-      b
+  def flatten(x: List[Any]): List[Any] = x flatMap {
+    case ls: List[_] => flatten(ls)
+    case e => List(e)
   }
 
 
   def main(args: Array[String]) {
-    //    println(flatten(List(List(1), 2)))
-    println(flatten(List(List(1, 2))))
-    //        println(flatten(List(List(1, 1), 2)))
-    //        println(flatten(List(List(1, 1), 2, List(3, List(5, 8)))))
+            println(flatten(List(List(1, 1), 2, List(3, List(5, 8)))))
   }
 
 }

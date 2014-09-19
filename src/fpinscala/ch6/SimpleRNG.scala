@@ -105,7 +105,20 @@ case class SimpleRNG(seed: Long) extends RNG {
     sequence(List.fill(count)(int))
   }
 
-  def nonNegativeLessThan(n: Int): Rand[Int] = ???
+  def nonNegativeLessThan(n: Int): Rand[Int] = rng => {
+    val (a, rng1) = nonNegativeInt(rng)
+    if (a < 0) nonNegativeLessThan(n)(rng1) else (a, rng1)
+  }
 
-  // page 86
+ /* def nonNegativeLessThan2(n: Int): Rand[Int] = rng => {
+    flatMap(nonNegativeInt)()
+    val (a, rng1) = nonNegativeInt(rng)
+    if (a < 0) nonNegativeLessThan(n)(rng1) else (a, rng1)
+  }*/
+
+  def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = rng => {
+    val (a, rng1) = f(rng)
+    g(a)(rng1)
+  }
+  // page 87
 }
