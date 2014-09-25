@@ -84,7 +84,7 @@ case class SimpleRNG(seed: Long) extends RNG {
   def doubleViaMap: Rand[Double] =
     map(nonNegativeInt)(_ / (Int.MaxValue.toDouble + 1))
 
-  def map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = rng => {
+  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = rng => {
     val (a, r1) = ra(rng)
     val (b, r2) = rb(r1)
     (f(a, b), r2)
@@ -110,15 +110,27 @@ case class SimpleRNG(seed: Long) extends RNG {
     if (a < 0) nonNegativeLessThan(n)(rng1) else (a, rng1)
   }
 
- /* def nonNegativeLessThan2(n: Int): Rand[Int] = rng => {
-    flatMap(nonNegativeInt)()
-    val (a, rng1) = nonNegativeInt(rng)
-    if (a < 0) nonNegativeLessThan(n)(rng1) else (a, rng1)
-  }*/
+  /* def nonNegativeLessThan2(n: Int): Rand[Int] = rng => {
+     flatMap(nonNegativeInt)()
+     val (a, rng1) = nonNegativeInt(rng)
+     if (a < 0) nonNegativeLessThan(n)(rng1) else (a, rng1)
+   }*/
 
-  def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = rng => {
+  // 6.8
+  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = rng => {
     val (a, rng1) = f(rng)
     g(a)(rng1)
   }
+
+  // 6.9
+  def mapViaFlatmap[A, B](s: Rand[A])(f: A => B): Rand[B] = {
+    flatMap(s)(a => unit(f(a)))
+  }
+
+
+  def map2ViaFlatmap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
+    flatMap(ra)(a => map(rb)(b => f(a,b)))
+  }
+
   // page 87
 }
