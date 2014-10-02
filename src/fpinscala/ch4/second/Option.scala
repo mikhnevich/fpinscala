@@ -22,7 +22,7 @@ sealed trait Option[+A] {
   }
 
   // 4.1
-  def flatMap[B](f: A => Option[B]): Option[B] =
+  def flatMap[B](f: A => Option[B]): Option[B] = map(f).getOrElse(None)
 
   // 4.1
   def getOrElse[B >: A](default: => B): B = this match {
@@ -31,12 +31,35 @@ sealed trait Option[+A] {
   }
 
   // 4.1
-  def orElse[B >: A](ob: => Option[B]): Option[B] =
+  def orElse[B >: A](ob: => Option[B]): Option[B] = map(Some(_)).getOrElse(ob)
 
   // 4.1
-  def filter(f: A => Boolean): Option[A] = ???
+  def filter(f: A => Boolean): Option[A] = this match {
+    case Some(a) if f(a) => this
+    case _ => None
+  }
 }
 
 case class Some[+A](get: A) extends Option[A]
 
 case object None extends Option[Nothing]
+
+
+object OptionTest {
+  def main(args: Array[String]) {
+    val f = (a: Int) => a * 2
+    println(Some(2).map(f))
+    println(None.map(f))
+
+    val g = (a: Int) => Some(a * 3)
+    println(Some(2).flatMap(g))
+    println(None.flatMap(g))
+
+    println(Some(4).getOrElse(5))
+    println(None.getOrElse(5))
+
+    println(Some(6).orElse(Some(7)))
+    println(None.orElse(Some(8)))
+    println(None.orElse(None))
+  }
+}
