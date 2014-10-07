@@ -24,7 +24,7 @@ sealed trait Option[+A] {
   // 4.1
   def flatMap[B](f: A => Option[B]): Option[B] = map(f).getOrElse(None)
 
-  // 4.1
+  // 4.1`
   def getOrElse[B >: A](default: => B): B = this match {
     case Some(a) => a
     case _ => default
@@ -38,6 +38,9 @@ sealed trait Option[+A] {
     case Some(a) if f(a) => this
     case _ => None
   }
+
+  def filter2(f: A => Boolean): Option[A] = flatMap(x => if (f(x)) Some(x) else None)
+
 }
 
 case class Some[+A](get: A) extends Option[A]
