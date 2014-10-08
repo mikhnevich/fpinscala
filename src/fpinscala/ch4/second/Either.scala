@@ -1,5 +1,7 @@
 package fpinscala.ch4.second
 
+import scala.collection.immutable.::
+
 
 sealed trait Either[+E, +A] {
   def mean(xs: IndexedSeq[Double]): Either[String, Double] =
@@ -60,9 +62,11 @@ object Either {
   // 4.7
   // Implement sequence and traverse for Either. These should return the first error
   // that’s encountered, if there is one.
-  def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] = ???
+  def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] =
+    traverse(es)(identity)
 
-  def traverse[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] = ???
+  def traverse[E, A, B](es: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
+    es.foldRight[Either[E, List[B]]](Right(Nil))((elem, acc) => f(elem).map2(acc)(_ :: _))
 
 
 }
