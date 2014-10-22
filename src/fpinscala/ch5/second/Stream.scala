@@ -3,6 +3,20 @@ package fpinscala.ch5.second
 import scala.annotation.tailrec
 
 sealed trait Stream[+A] {
+
+  override def toString: String = {
+    val text = this match {
+      case Cons(h, t) => h().toString + ", " + t().toStringInternal
+      case Empty => "[]"
+    }
+    s"Stream($text)"
+  }
+
+  def toStringInternal: String = this match {
+    case Cons(h, t) => h().toString + ", " + t().toStringInternal
+    case Empty => "[]"
+  }
+
   def headOption: Option[A] = this match {
     case Empty => None
     case Cons(h, t) => Some(h())
@@ -109,21 +123,68 @@ sealed trait Stream[+A] {
   // zipAll. The zipAll function should continue the traversal as long as either stream
   // has more elements—it uses Option to indicate whether each stream has been
   // exhausted.
+  def zipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] =
+    Stream.unfold((this, s2)) {
+      case (Cons(h1, t1), Cons(h2, t2)) => Some((Some(h1()), Some(h2())), (t1(), t2()))
+      case (Cons(h1, t1), _) => Some((Some(h1()), None), (t1(), Stream.empty))
+      case (_, Cons(h2, t2)) => Some((None, Some(h2())), (Stream.empty, t2()))
+      case _ => None
+    }
 
   // 5.13
-  def take_unfold(n: Int): Stream[A] = ???
+  def take_unfold(n: Int): Stream[A] =
+    Stream.unfold((n, this)) {
+      case (x, Cons(h, t)) if x > 1 => Some(h(), (x - 1, t()))
+      case (x, Cons(h, t)) if x == 1 => Some(h(), (x - 1, Stream.empty))
+      case _ => None
+    }
 
   // 5.13
-  def takeWhile_unfold(f: A => Boolean): Stream[A] = ???
+  def takeWhile_unfold(f: A => Boolean): Stream[A] =
+    Stream.unfold(this) {
+      case Cons(h, t) if f(h()) => Some(h(), t())
+      case Cons(h, t) => None
+    }
 
   // 5.13
-  def map_unfold[B](f: A => B): Stream[B] = ???
+  def map_unfold[B](f: A => B): Stream[B] =
+    Stream.unfold(this) {
+      case Cons(h, t) => Some(f(h()), t())
+      case _ => None
+    }
 
-  // 5.13
-  def zipWith[A, B, C](a: Stream[A], b: Stream[B])(f: (A, B) => C): Stream[C] = ???
+  // 5.14
+  // Hard: Implement startsWith using functions you’ve written. It should check if one
+  // Stream is a prefix of another. For instance, Stream(1,2,3) startsWith Stream(1,2)
+  // would be true.
+  def startsWith[A](s: Stream[A]): Boolean =
+    zipAll(s).takeWhile(!_._2.isEmpty) forAll {
+      case (h, h2) => h == h2
+    }
 
-  // 5.13
-  def zipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] = ???
+
+  // 5.15
+  // Implement tails using unfold. For a given Stream, tails returns the Stream of suffixes
+  // of the input sequence, starting with the original Stream. For example, given
+  // Stream(1,2,3), it would return Stream(Stream(1,2,3), Stream(2,3), Stream(3), Stream()).
+  def tails: Stream[Stream[A]] =
+    Stream.unfold(this) {
+      case Empty => None
+      case s => Some(s, s drop 1)
+    }
+
+  def hasSubsequence[A](s: Stream[A]): Boolean =
+    tails exists (_ startsWith s)
+
+  // 5.16
+  // Hard: Generalize tails to the function scanRight, which is like a foldRight that
+  // returns a stream of the intermediate results. For example:
+  // scala> Stream(1,2,3).scanRight(0)(_ + _).toList
+  // res0: List[Int] = List(6,5,3,0)
+  // This example should be equivalent to the expression List(1+2+3+0, 2+3+0, 3+0, 0).
+  // Your function should reuse intermediate results so that traversing a Stream with n
+  // elements always takes time linear in n. Can it be implemented using unfold? How, or
+  // why not? Could it be implemented using another function we’ve written?
 }
 
 case object Empty extends Stream[Nothing]
@@ -148,12 +209,12 @@ object Stream {
   // 5.8
   // Generalize ones slightly to the function constant, which returns an infinite Stream of
   // a given value.
-  def constant[A](a: A): Stream[A] = cons(a, constant(a))
+  def constant[A](a: A): Stream[A] = Stream.cons(a, constant(a))
 
   // 5.9
   // Write a function that generates an infinite stream of integers, starting from n, then n
   // + 1, n + 2, and so on.7
-  def from(n: Int): Stream[Int] = cons(n, from(n + 1))
+  def from(n: Int): Stream[Int] = Stream.cons(n, from(n + 1))
 
 
   // 5.10
@@ -161,7 +222,7 @@ object Stream {
   // 2, 3, 5, 8, and so on.
   def fib: Stream[Int] = {
     def f(a: Int, b: Int): Stream[Int] =
-      cons(a, f(b, a + b))
+      Stream.cons(a, f(b, a + b))
     f(0, 1)
   }
 
@@ -184,10 +245,16 @@ object Stream {
   // 5.12
   def fib_unfold: Stream[Int] = unfold((0, 1)) { case (a, b) => Some(a, (b, a + b))}
 
+  // 5.13
+  def zipWith[A, B, C](a: Stream[A], b: Stream[B])(f: (A, B) => C): Stream[C] =
+    Stream.unfold((a, b)) {
+      case (Cons(h1, t1), Cons(h2, t2)) => Some(f(h1(), h2()), (t1(), t2()))
+      case _ => None
+    }
 }
 
 object StreamTest {
   def main(args: Array[String]) {
-    println(Stream.fib take 10 toList)
+    Stream(1, 2, 3) tails
   }
 }
